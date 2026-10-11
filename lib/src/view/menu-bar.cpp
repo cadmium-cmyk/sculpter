@@ -5,6 +5,7 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QMenuBar>
+#include <QStandardPaths>
 #include "../util.hpp"
 #include "history.hpp"
 #include "scene.hpp"

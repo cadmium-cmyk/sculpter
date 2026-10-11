@@ -47,10 +47,10 @@ int main (int argv, char** args)
   DILAY_INFO ("Qt: %s", QLibraryInfo::version ().toString ().toStdString ().c_str ());
 
   QCoreApplication::setApplicationName ("Dilay");
-  QCoreApplication::setAttribute (Qt::AA_UseDesktopOpenGL);
   OpenGL::setDefaultFormat ();
 
   QApplication app (argv, args);
+  app.setStyle ("adwaita");
   Config       config;
   Cache        cache;
 

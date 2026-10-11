@@ -3,8 +3,8 @@
  * Use and redistribute under the terms of the GNU General Public License
  */
 #include <QOpenGLContext>
-#include <QOpenGLExtensions>
 #include <QOpenGLFunctions_2_1>
+#include <QOpenGLVersionFunctionsFactory>
 #include <glm/glm.hpp>
 #include <iostream>
 #include <memory>
@@ -39,8 +39,11 @@ namespace OpenGL
   static_assert (sizeof (int) >= 4, "type does not meet size required by OpenGL");
   static_assert (sizeof (float) >= 4, "type does not meet size required by OpenGL");
 
-  static QOpenGLFunctions_2_1*                                  fun = nullptr;
-  static std::unique_ptr<QOpenGLExtension_EXT_geometry_shader4> gsFun;
+  typedef void (*glProgramParameteriEXT_t) (GLuint program, GLenum pname, GLint value);
+
+  static QOpenGLFunctions_2_1*    fun = nullptr;
+  static glProgramParameteriEXT_t glProgramParameteriEXTFunc = nullptr;
+  static bool                     hasGS = false;
 
   void setDefaultFormat ()
   {
@@ -57,7 +60,7 @@ namespace OpenGL
 
   void initializeFunctions (bool initGeometryShader)
   {
-    fun = QOpenGLContext::currentContext ()->versionFunctions<QOpenGLFunctions_2_1> ();
+    fun = QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_2_1> (QOpenGLContext::currentContext ());
     if (fun == nullptr)
     {
       DILAY_PANIC ("could not obtain OpenGL 2.1 context")
@@ -66,16 +69,17 @@ namespace OpenGL
 
     if (initGeometryShader)
     {
-      const bool support =
-        QOpenGLContext::currentContext ()->hasExtension (QByteArray ("GL_EXT_geometry_shader4"));
-      if (support)
+      QOpenGLContext* ctx = QOpenGLContext::currentContext ();
+      hasGS = ctx->hasExtension (QByteArray ("GL_EXT_geometry_shader4"));
+      if (hasGS)
       {
-        gsFun = std::make_unique<QOpenGLExtension_EXT_geometry_shader4> ();
-        if (gsFun == nullptr)
+        glProgramParameteriEXTFunc =
+          reinterpret_cast<glProgramParameteriEXT_t> (ctx->getProcAddress ("glProgramParameteriEXT"));
+        if (glProgramParameteriEXTFunc == nullptr)
         {
-          DILAY_PANIC ("could not initialize GL_EXT_geometry_shader4 extension")
+          glProgramParameteriEXTFunc = reinterpret_cast<glProgramParameteriEXT_t> (
+            ctx->getProcAddress ("glProgramParameteriARB"));
         }
-        gsFun->initializeOpenGLFunctions ();
       }
     }
 
@@ -83,7 +87,7 @@ namespace OpenGL
     DILAY_INFO ("OpenGL vendor: %s", fun->glGetString (GL_VENDOR));
     DILAY_INFO ("OpenGL renderer: %s", fun->glGetString (GL_RENDERER));
     DILAY_INFO ("OpenGL GLSL version: %s", fun->glGetString (GL_SHADING_LANGUAGE_VERSION));
-    DILAY_INFO ("OpenGL supports GL_EXT_geometry_shader4: %i", gsFun != nullptr);
+    DILAY_INFO ("OpenGL supports GL_EXT_geometry_shader4: %i", hasGS);
   }
 
   DELEGATE_GL_CONSTANT (Always, GL_ALWAYS);
@@ -160,7 +164,7 @@ namespace OpenGL
                 const void*)
   DELEGATE4_GL (void, glViewport, unsigned int, unsigned int, unsigned int, unsigned int)
 
-  bool hasGeometryShader () { return bool(gsFun); }
+  bool hasGeometryShader () { return hasGS; }
 
   void glUniformVec3 (unsigned int id, const glm::vec3& v) { fun->glUniform3f (id, v.x, v.y, v.z); }
   void glUniformVec4 (unsigned int id, const glm::vec4& v)
@@ -245,12 +249,15 @@ namespace OpenGL
     {
       assert (OpenGL::hasGeometryShader ());
 
-      gmId = compileShader (GL_GEOMETRY_SHADER_EXT, Shader::geometryShader ());
+      gmId = compileShader (0x8DD9 /* GL_GEOMETRY_SHADER_EXT */, Shader::geometryShader ());
       fun->glAttachShader (programId, gmId);
 
-      gsFun->glProgramParameteriEXT (programId, GL_GEOMETRY_VERTICES_OUT_EXT, 3);
-      gsFun->glProgramParameteriEXT (programId, GL_GEOMETRY_INPUT_TYPE_EXT, GL_TRIANGLES);
-      gsFun->glProgramParameteriEXT (programId, GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
+      if (glProgramParameteriEXTFunc != nullptr)
+      {
+        glProgramParameteriEXTFunc (programId, 0x8DDA /* GL_GEOMETRY_VERTICES_OUT_EXT */, 3);
+        glProgramParameteriEXTFunc (programId, 0x8DDB /* GL_GEOMETRY_INPUT_TYPE_EXT */, GL_TRIANGLES);
+        glProgramParameteriEXTFunc (programId, 0x8DDC /* GL_GEOMETRY_OUTPUT_TYPE_EXT */, GL_TRIANGLE_STRIP);
+      }
     }
 
     fun->glBindAttribLocation (programId, OpenGL::PositionIndex, "position");

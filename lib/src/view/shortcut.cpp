@@ -4,6 +4,7 @@
  */
 #include <QShortcut>
 #include <QString>
+#include <QWidget>
 #include "view/input.hpp"
 #include "view/shortcut.hpp"
 
@@ -35,7 +36,7 @@ struct ViewShortcut::Impl
   QShortcut& toQShortcut (QWidget& parent) const
   {
     const QKeySequence keys = ViewInput::toQKeySequence (this->event, this->modifier);
-    QShortcut&         shortcut = *new QShortcut (keys, &parent);
+    QShortcut&         shortcut = *new QShortcut (keys, static_cast<QObject*> (&parent));
 
     QObject::connect (&shortcut, &QShortcut::activated, this->call);
 

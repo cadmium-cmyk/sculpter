@@ -1,6 +1,7 @@
 VERSION                 = 1.9.0
-CONFIG                 += debug_and_release warn_on object_parallel_to_source ordered c++14
-QT                     += widgets opengl openglextensions xml
+CONFIG                 += debug_and_release warn_on object_parallel_to_source ordered c++17 link_pkgconfig
+PKGCONFIG              += adwaita-qt6
+QT                     += widgets opengl openglwidgets xml
 MOC_DIR                 = moc
 OBJECTS_DIR             = obj
 QMAKE_CXXFLAGS         += -DDILAY_VERSION=\\\"$$VERSION\\\" -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL

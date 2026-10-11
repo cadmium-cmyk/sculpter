@@ -185,14 +185,12 @@ QPoint ViewUtil::toQPoint (const glm::ivec2& p) { return QPoint (p.x, p.y); }
 
 void ViewUtil::connect (const QSpinBox& s, const std::function<void(int)>& f)
 {
-  void (QSpinBox::*ptr) (int) = &QSpinBox::valueChanged;
-  QObject::connect (&s, ptr, f);
+  QObject::connect (&s, &QSpinBox::valueChanged, f);
 }
 
 void ViewUtil::connect (const QDoubleSpinBox& s, const std::function<void(double)>& f)
 {
-  void (QDoubleSpinBox::*ptr) (double) = &QDoubleSpinBox::valueChanged;
-  QObject::connect (&s, ptr, f);
+  QObject::connect (&s, &QDoubleSpinBox::valueChanged, f);
 }
 
 void ViewUtil::connect (const QPushButton& b, const std::function<void()>& f)
@@ -202,8 +200,7 @@ void ViewUtil::connect (const QPushButton& b, const std::function<void()>& f)
 
 void ViewUtil::connect (const QButtonGroup& g, int initial, const std::function<void(int)>& f)
 {
-  void (QButtonGroup::*ptr) (int) = &QButtonGroup::buttonReleased;
-  QObject::connect (&g, ptr, f);
+  QObject::connect (&g, &QButtonGroup::idReleased, f);
   g.button (initial)->click ();
 }
 
