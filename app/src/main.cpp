@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QLibraryInfo>
 #include <QStandardPaths>
+#include <AdwaitaQt6/adwaita.h>
 #include "cache.hpp"
 #include "config.hpp"
 #include "opengl.hpp"
@@ -50,7 +51,7 @@ int main (int argv, char** args)
   OpenGL::setDefaultFormat ();
 
   QApplication app (argv, args);
-  app.setStyle ("adwaita");
+  app.setStyle ("Adwaita");
   Config       config;
   Cache        cache;
 
