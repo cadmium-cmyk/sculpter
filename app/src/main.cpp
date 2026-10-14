@@ -13,6 +13,7 @@
 #include "util.hpp"
 #include "view/log.hpp"
 #include "view/main-window.hpp"
+#include "view/util.hpp"
 
 namespace
 {
@@ -58,6 +59,8 @@ int main (int argv, char** args)
   {
     config.fromFile (configPath ().toStdString ());
   }
+
+  ViewUtil::applyTheme (config.get<int> ("window/theme"));
 
   ViewMainWindow mainWindow (config, cache);
   mainWindow.resize (config.get<int> ("window/initial-width"),

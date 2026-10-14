@@ -9,7 +9,7 @@
 
 namespace
 {
-  static constexpr int latestVersion = 10;
+  static constexpr int latestVersion = 11;
 
   template <typename T>
   void updateValue (Config& config, const std::string& path, const T& oldValue, const T& newValue)
@@ -97,6 +97,7 @@ void Config::restoreDefaults ()
 
   this->set ("window/initial-width", 1024);
   this->set ("window/initial-height", 768);
+  this->set ("window/theme", 0);
 }
 
 void Config::update ()
@@ -144,6 +145,10 @@ void Config::update ()
 
     case 9:
       this->remove ("editor/camera/zoom-in-factor");
+      break;
+
+    case 10:
+      forceUpdateValue<int> (*this, "window/theme", 0);
       break;
 
     case latestVersion:

@@ -21,6 +21,7 @@
 #include "view/two-column-grid.hpp"
 #include "view/util.hpp"
 #include "view/vector-edit.hpp"
+#include <QComboBox>
 
 namespace
 {
@@ -102,6 +103,23 @@ namespace
     QCheckBox& edit = ViewUtil::checkBox (label, value);
     ViewUtil::connect (edit, [&data, path](bool b) { setAndUpdate (data, path, b); });
     grid.add (edit);
+  }
+
+  void addComboBox (DialogData& data, ViewTwoColumnGrid& grid, const std::string& path,
+                    const QString& label, const std::vector<QString>& items,
+                    const std::function<void(int)>& on_change = nullptr)
+  {
+    const int  value = data.glWidget.state ().config ().get<int> (path);
+    QComboBox& edit = ViewUtil::comboBox (items);
+    edit.setCurrentIndex (value);
+    ViewUtil::connect (edit, [&data, path, on_change](int i) {
+      setAndUpdate (data, path, i);
+      if (on_change)
+      {
+        on_change(i);
+      }
+    });
+    grid.add (label, edit);
   }
 
   QWidget* makeColorsPage (DialogData& data)
@@ -211,6 +229,10 @@ namespace
   QWidget* makeMiscPage (DialogData& data)
   {
     ViewTwoColumnGrid* grid = new ViewTwoColumnGrid;
+
+    addComboBox (data, *grid, "window/theme", QObject::tr ("Theme"),
+                 {QObject::tr ("System"), QObject::tr ("Light"), QObject::tr ("Dark")},
+                 [](int theme){ ViewUtil::applyTheme (theme); });
 
     addIntEdit (data, *grid, "editor/undo-depth", QObject::tr ("Undo depth"), 1, Util::maxInt ());
     addIntEdit (data, *grid, "window/initial-width", QObject::tr ("Initial window width"), 1,
