@@ -11,6 +11,11 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QMessageBox>
+#include <QApplication>
+#include <QComboBox>
+#include <QPalette>
+#include <QStyle>
+#include <QStyleFactory>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QSlider>
@@ -123,6 +128,16 @@ QButtonGroup& ViewUtil::buttonGroup (const std::vector<QString>& labels)
   return group;
 }
 
+QComboBox& ViewUtil::comboBox (const std::vector<QString>& items)
+{
+  QComboBox* cb = new QComboBox;
+  for (const QString& item : items)
+  {
+    cb->addItem (item);
+  }
+  return *cb;
+}
+
 QFrame& ViewUtil::horizontalLine ()
 {
   QFrame& frame = *new QFrame;
@@ -228,6 +243,11 @@ void ViewUtil::connect (const QRadioButton& r, const std::function<void(bool)>& 
 void ViewUtil::connect (const QSlider& s, const std::function<void(int)>& f)
 {
   QObject::connect (&s, &QSlider::valueChanged, f);
+}
+
+void ViewUtil::connect (const QComboBox& o, const std::function<void(int)>& f)
+{
+  QObject::connect (&o, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), f);
 }
 
 void ViewUtil::connect (const ViewResolutionSlider& s, const std::function<void(float)>& f)
@@ -343,4 +363,50 @@ QAction& ViewUtil::addCheckableAction (QMenu& menu, const QString& label,
   menu.addAction (a);
   QObject::connect (a, &QAction::toggled, f);
   return *a;
+}
+
+void ViewUtil::applyTheme (int theme)
+{
+  switch (theme)
+  {
+    case 1: // Light
+    {
+      QApplication::setStyle (QStyleFactory::create ("Fusion"));
+      if (qApp && qApp->style()) {
+        QPalette lightPalette = qApp->style()->standardPalette();
+        QApplication::setPalette (lightPalette);
+      }
+      break;
+    }
+    case 2: // Dark
+    {
+      QApplication::setStyle (QStyleFactory::create ("Fusion"));
+      QPalette darkPalette;
+      darkPalette.setColor(QPalette::Window, QColor(53, 53, 53));
+      darkPalette.setColor(QPalette::WindowText, Qt::white);
+      darkPalette.setColor(QPalette::Base, QColor(25, 25, 25));
+      darkPalette.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
+      darkPalette.setColor(QPalette::ToolTipBase, Qt::white);
+      darkPalette.setColor(QPalette::ToolTipText, Qt::white);
+      darkPalette.setColor(QPalette::Text, Qt::white);
+      darkPalette.setColor(QPalette::Button, QColor(53, 53, 53));
+      darkPalette.setColor(QPalette::ButtonText, Qt::white);
+      darkPalette.setColor(QPalette::BrightText, Qt::red);
+      darkPalette.setColor(QPalette::Link, QColor(42, 130, 218));
+      darkPalette.setColor(QPalette::Highlight, QColor(42, 130, 218));
+      darkPalette.setColor(QPalette::HighlightedText, Qt::black);
+      QApplication::setPalette (darkPalette);
+      break;
+    }
+    case 0: // System
+    default:
+    {
+      QApplication::setStyle (QStyleFactory::create ("Fusion"));
+      if (qApp && qApp->style()) {
+        QPalette systemPalette = qApp->style()->standardPalette();
+        QApplication::setPalette (systemPalette);
+      }
+      break;
+    }
+  }
 }

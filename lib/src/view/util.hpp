@@ -26,6 +26,7 @@ class QRadioButton;
 class QSlider;
 class QSpinBox;
 class QString;
+class QComboBox;
 class QTabWidget;
 class QToolButton;
 class QWidget;
@@ -42,6 +43,7 @@ namespace ViewUtil
   ViewDoubleSlider&     slider (unsigned short, float, float, float, unsigned short = 1);
   ViewResolutionSlider& resolutionSlider (float, float, float);
   QButtonGroup&         buttonGroup (const std::vector<QString>&);
+  QComboBox&            comboBox (const std::vector<QString>&);
   QFrame&               horizontalLine ();
   QWidget&              emptyWidget ();
   QLineEdit&            lineEdit (float, unsigned short = 2);
@@ -59,6 +61,7 @@ namespace ViewUtil
   void                  connect (const QCheckBox&, const std::function<void(bool)>&);
   void                  connect (const QRadioButton&, const std::function<void(bool)>&);
   void                  connect (const QSlider&, const std::function<void(int)>&);
+  void                  connect (const QComboBox&, const std::function<void(int)>&);
   void                  connect (const ViewResolutionSlider&, const std::function<void(float)>&);
   void                  connect (const ViewDoubleSlider&, const std::function<void(float)>&);
   void                  connect (const QAction&, const std::function<void()>&);
@@ -75,6 +78,7 @@ namespace ViewUtil
   QAction& addAction (QMenu&, const QString&, const QKeySequence&, const std::function<void()>&);
   QAction& addCheckableAction (QMenu&, const QString&, const QKeySequence&, bool,
                                const std::function<void(bool)>&);
+  void applyTheme (int theme);
 };
 
 #endif
