@@ -47,6 +47,7 @@ namespace OpenGL
     format.setVersion (2, 1);
     format.setDepthBufferSize (24);
     format.setStencilBufferSize (1);
+    format.setAlphaBufferSize(8); // Ensure alpha channel exists to fix transparency issues
     format.setProfile (QSurfaceFormat::NoProfile);
     format.setRenderableType (QSurfaceFormat::OpenGL);
 
