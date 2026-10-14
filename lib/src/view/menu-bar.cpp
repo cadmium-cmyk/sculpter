@@ -1,3 +1,4 @@
+#include <QStandardPaths>
 /* This file is part of Dilay
  * Copyright © 2015-2018 Alexander Bau
  * Use and redistribute under the terms of the GNU General Public License
@@ -26,7 +27,7 @@ namespace
   {
     return scene.hasFileName ()
              ? QString (scene.fileName ().c_str ())
-             : QStandardPaths::standardLocations (QStandardPaths::HomeLocation).front ();
+             : QStandardPaths::standardLocations(QStandardPaths::HomeLocation).front();
   }
 
   QString filterAllFiles () { return QObject::tr ("All files (*.*)"); }

@@ -35,11 +35,11 @@ struct ViewShortcut::Impl
   QShortcut& toQShortcut (QWidget& parent) const
   {
     const QKeySequence keys = ViewInput::toQKeySequence (this->event, this->modifier);
-    QShortcut&         shortcut = *new QShortcut (keys, &parent);
+    QShortcut*         shortcut = new QShortcut (keys, (QObject*)&parent);
 
-    QObject::connect (&shortcut, &QShortcut::activated, this->call);
+    QObject::connect (shortcut, &QShortcut::activated, this->call);
 
-    return shortcut;
+    return *shortcut;
   }
 };
 

@@ -202,8 +202,7 @@ void ViewUtil::connect (const QPushButton& b, const std::function<void()>& f)
 
 void ViewUtil::connect (const QButtonGroup& g, int initial, const std::function<void(int)>& f)
 {
-  void (QButtonGroup::*ptr) (int) = &QButtonGroup::buttonReleased;
-  QObject::connect (&g, ptr, f);
+  QObject::connect (&g, &QButtonGroup::idReleased, f);
   g.button (initial)->click ();
 }
 
