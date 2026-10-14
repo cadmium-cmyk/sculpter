@@ -95,7 +95,7 @@ struct Renderer::Impl
   void setupRendering ()
   {
     OpenGL::glClearColor (this->clearColor.r (), this->clearColor.g (), this->clearColor.b (),
-                          0.0f);
+                          1.0f);
     OpenGL::glClearStencil (0);
     OpenGL::glFrontFace (OpenGL::CCW ());
     OpenGL::glEnable (OpenGL::CullFace ());
