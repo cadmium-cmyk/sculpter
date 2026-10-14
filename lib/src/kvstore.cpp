@@ -197,7 +197,7 @@ struct KVStore::Impl
       {
         const std::string& key = c.first;
         const Value&       value = c.second;
-        QStringList        path = QString (key.c_str ()).split ("/", QString::SkipEmptyParts);
+        QStringList        path = QString (key.c_str ()).split ("/", Qt::SkipEmptyParts);
 
         this->appendAsDomChild (doc, doc, path, value);
       }

@@ -3,8 +3,7 @@
  * Use and redistribute under the terms of the GNU General Public License
  */
 #include <QOpenGLContext>
-#include <QOpenGLExtensions>
-#include <QOpenGLFunctions_2_1>
+#include <QOpenGLFunctions>
 #include <glm/glm.hpp>
 #include <iostream>
 #include <memory>
@@ -39,8 +38,7 @@ namespace OpenGL
   static_assert (sizeof (int) >= 4, "type does not meet size required by OpenGL");
   static_assert (sizeof (float) >= 4, "type does not meet size required by OpenGL");
 
-  static QOpenGLFunctions_2_1*                                  fun = nullptr;
-  static std::unique_ptr<QOpenGLExtension_EXT_geometry_shader4> gsFun;
+  static QOpenGLFunctions*                                      fun = nullptr;
 
   void setDefaultFormat ()
   {
@@ -57,33 +55,18 @@ namespace OpenGL
 
   void initializeFunctions (bool initGeometryShader)
   {
-    fun = QOpenGLContext::currentContext ()->versionFunctions<QOpenGLFunctions_2_1> ();
+    (void)initGeometryShader;
+    fun = QOpenGLContext::currentContext ()->functions ();
     if (fun == nullptr)
     {
-      DILAY_PANIC ("could not obtain OpenGL 2.1 context")
+      DILAY_PANIC ("could not obtain OpenGL context functions")
     }
     fun->initializeOpenGLFunctions ();
-
-    if (initGeometryShader)
-    {
-      const bool support =
-        QOpenGLContext::currentContext ()->hasExtension (QByteArray ("GL_EXT_geometry_shader4"));
-      if (support)
-      {
-        gsFun = std::make_unique<QOpenGLExtension_EXT_geometry_shader4> ();
-        if (gsFun == nullptr)
-        {
-          DILAY_PANIC ("could not initialize GL_EXT_geometry_shader4 extension")
-        }
-        gsFun->initializeOpenGLFunctions ();
-      }
-    }
 
     DILAY_INFO ("OpenGL version: %s", fun->glGetString (GL_VERSION));
     DILAY_INFO ("OpenGL vendor: %s", fun->glGetString (GL_VENDOR));
     DILAY_INFO ("OpenGL renderer: %s", fun->glGetString (GL_RENDERER));
     DILAY_INFO ("OpenGL GLSL version: %s", fun->glGetString (GL_SHADING_LANGUAGE_VERSION));
-    DILAY_INFO ("OpenGL supports GL_EXT_geometry_shader4: %i", gsFun != nullptr);
   }
 
   DELEGATE_GL_CONSTANT (Always, GL_ALWAYS);
@@ -148,7 +131,19 @@ namespace OpenGL
   DELEGATE2_GL (int, glGetUniformLocation, unsigned int, const char*)
   DELEGATE1_GL (bool, glIsBuffer, unsigned int)
   DELEGATE1_GL (bool, glIsProgram, unsigned int)
-  DELEGATE2_GL (void, glPolygonMode, unsigned int, unsigned int)
+  void glPolygonMode (unsigned int face, unsigned int mode)
+  {
+    #ifndef GL_ES_VERSION_2_0
+      // For desktop OpenGL
+      typedef void (*PFNGLPOLYGONMODEPROC) (GLenum face, GLenum mode);
+      auto func = (PFNGLPOLYGONMODEPROC)QOpenGLContext::currentContext()->getProcAddress("glPolygonMode");
+      if (func)
+        func(face, mode);
+    #else
+      (void)face;
+      (void)mode;
+    #endif
+  }
   DELEGATE2_GL (void, glPolygonOffset, float, float)
   DELEGATE3_GL (void, glStencilFunc, unsigned int, int, unsigned int)
   DELEGATE3_GL (void, glStencilOp, unsigned int, unsigned int, unsigned int)
@@ -160,7 +155,7 @@ namespace OpenGL
                 const void*)
   DELEGATE4_GL (void, glViewport, unsigned int, unsigned int, unsigned int, unsigned int)
 
-  bool hasGeometryShader () { return bool(gsFun); }
+  bool hasGeometryShader () { return false; }
 
   void glUniformVec3 (unsigned int id, const glm::vec3& v) { fun->glUniform3f (id, v.x, v.y, v.z); }
   void glUniformVec4 (unsigned int id, const glm::vec4& v)
@@ -244,13 +239,6 @@ namespace OpenGL
     if (loadGeometryShader)
     {
       assert (OpenGL::hasGeometryShader ());
-
-      gmId = compileShader (GL_GEOMETRY_SHADER_EXT, Shader::geometryShader ());
-      fun->glAttachShader (programId, gmId);
-
-      gsFun->glProgramParameteriEXT (programId, GL_GEOMETRY_VERTICES_OUT_EXT, 3);
-      gsFun->glProgramParameteriEXT (programId, GL_GEOMETRY_INPUT_TYPE_EXT, GL_TRIANGLES);
-      gsFun->glProgramParameteriEXT (programId, GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
     }
 
     fun->glBindAttribLocation (programId, OpenGL::PositionIndex, "position");

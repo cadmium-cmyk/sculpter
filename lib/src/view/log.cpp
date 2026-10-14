@@ -63,7 +63,7 @@ void ViewLog::show (ViewMainWindow& window)
   layout->addWidget (textEdit);
   layout->addWidget (buttons);
 
-  dialog.setFixedWidth (100 * QFontMetrics (textEdit->currentFont ()).width ("x"));
+  dialog.setFixedWidth (100 * QFontMetrics (textEdit->currentFont ()).horizontalAdvance ("x"));
   dialog.setFixedHeight (25 * QFontMetrics (textEdit->currentFont ()).height ());
   dialog.setLayout (layout);
   dialog.setWindowTitle (QObject::tr ("Log"));

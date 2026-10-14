@@ -145,15 +145,15 @@ struct ToolMoveCamera::Impl
   ToolResponse wheelEvent (const QWheelEvent& e)
   {
     if (this->isImmediateTool && e.modifiers () == Qt::NoModifier &&
-        e.orientation () == Qt::Vertical)
+        e.angleDelta().y() != 0)
     {
       Camera& camera = this->self->state ().camera ();
 
-      if (e.delta () > 0)
+      if (e.angleDelta().y() > 0)
       {
         camera.stepAlongGaze (this->zoomInMouseWheelFactor);
       }
-      else if (e.delta () < 0)
+      else if (e.angleDelta().y() < 0)
       {
         camera.stepAlongGaze (1.0f / this->zoomInMouseWheelFactor);
       }
